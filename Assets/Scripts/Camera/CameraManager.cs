@@ -8,6 +8,7 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private CinemachineCamera firstPersonCamera;
 
     private CinemachineCamera currentExploreCamera;
+    private CinemachinePanTilt fpPanTilt;
 
     private PlayerMovement playerMovement;
 
@@ -15,11 +16,15 @@ public class CameraManager : MonoBehaviour
     private const int COVER_PRIORITY = 20;
     private const int FIRST_PERSON_PRIORITY = 30;
 
+    private CinemachineCamera activeCamera;
+
     private void Awake()
     {
         playerMovement = FindObjectOfType<PlayerMovement>();
         if(!playerMovement)
             Debug.LogError("CameraManager: No PlayerMovement found in scene!");
+        
+        fpPanTilt = firstPersonCamera.GetComponent<CinemachinePanTilt>();
     }
 
     private void LateUpdate()
@@ -40,12 +45,24 @@ public class CameraManager : MonoBehaviour
         {
             case MovementState.FirstPerson:
                 if(firstPersonCamera != null) firstPersonCamera.Priority = FIRST_PERSON_PRIORITY;
+
+                if (activeCamera != firstPersonCamera)
+                {
+                        fpPanTilt.PanAxis.Value = 0;
+                        fpPanTilt.TiltAxis.Value = 0;
+                }
+                activeCamera = firstPersonCamera;
+
                 break;
             case MovementState.Cover:
                 if (coverCamera != null) coverCamera.Priority = COVER_PRIORITY;
+                activeCamera = coverCamera;
+
                 break;
             case MovementState.Free:
                 if (currentExploreCamera != null) currentExploreCamera.Priority = EXPLORE_PRIORITY;
+                activeCamera = currentExploreCamera;
+
                 break;
         }
     }
