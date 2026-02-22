@@ -7,7 +7,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float rotationSpeed = 10f;
 
-    public MovementState currentState = MovementState.Free;
+    private MovementState currentState = MovementState.Free;
 
     private InputActions playerInput;
     private CharacterController characterController;
@@ -89,6 +89,18 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region HELPERS
+
+    public void SetState(MovementState newState)
+    {
+        if (currentState == newState) return;
+        currentState = newState;
+        Debug.Log($"State changed: {currentState} → {newState}");
+    }
+
+    public MovementState GetState()
+    {
+        return currentState;
+    } 
 
     public Vector3 GetPlayerMovementDirection()
     {

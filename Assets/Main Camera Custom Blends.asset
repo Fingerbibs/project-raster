@@ -23,18 +23,7 @@ MonoBehaviour:
         m_Curve: []
         m_PreInfinity: 0
         m_PostInfinity: 0
-        m_RotationOrder: 0
-  - From: '**ANY CAMERA**'
-    To: CoverCam
-    Blend:
-      Style: 6
-      Time: 0.4
-      CustomCurve:
-        serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 0
-        m_PostInfinity: 0
-        m_RotationOrder: 0
+        m_RotationOrder: 4
   - From: FirstPersonCam
     To: '**ANY CAMERA**'
     Blend:
@@ -45,4 +34,26 @@ MonoBehaviour:
         m_Curve: []
         m_PreInfinity: 0
         m_PostInfinity: 0
-        m_RotationOrder: 0
+        m_RotationOrder: 4
+  - From: '**ANY CAMERA**'
+    To: CoverCam
+    Blend:
+      Style: 6
+      Time: 0.4
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 4
+  - From: CoverCam
+    To: ExploreCam_Room1
+    Blend:
+      Style: 6
+      Time: 0.2
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 4

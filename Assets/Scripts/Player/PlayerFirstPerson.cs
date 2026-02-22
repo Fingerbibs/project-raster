@@ -46,7 +46,7 @@ public class PlayerFirstPerson : MonoBehaviour
         if (coverSystem != null)
             coverSystem.enabled = false;
         
-        playerMovement.currentState = MovementState.FirstPerson;
+        playerMovement.SetState(MovementState.FirstPerson);
     }
 
     private void ExitFirstPerson()
@@ -54,7 +54,7 @@ public class PlayerFirstPerson : MonoBehaviour
         if (coverSystem != null)
             coverSystem.enabled = true;
 
-        playerMovement.currentState = MovementState.Free;
+        playerMovement.SetState(MovementState.Free);
     }
 
     private void LateUpdate()

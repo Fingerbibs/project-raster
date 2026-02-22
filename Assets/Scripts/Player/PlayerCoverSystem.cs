@@ -7,31 +7,19 @@ public class PlayerCoverSystem : MonoBehaviour
     [SerializeField] private float enterDotThreshold = 0.7f;
     [SerializeField] private float wallCheckDistance = 1.5f;
     [SerializeField] private float edgeCheckOffset = 0.3f;
+    [SerializeField] private float nearEdgeDistance = 2f;
 
     private PlayerMovement playerMovement;
     private CharacterController characterController;
 
     private Vector3 coverNormal;
     private Vector3 coverRight;
+    private float lastMoveDirection;
 
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
         characterController = GetComponent<CharacterController>();
-    }
-
-    private void Update()
-    {
-        if (!IsInCover()) return;
-
-        Vector3 moveDir = GetNormalizedMovement();
-        if (moveDir == Vector3.zero) return;
-
-        // Exit if pushing away from wall
-        if (Vector3.Dot(moveDir, coverNormal) > enterDotThreshold)
-        {
-            ExitCover();
-        }
     }
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
@@ -47,27 +35,10 @@ public class PlayerCoverSystem : MonoBehaviour
         wallNormal.Normalize();
 
         if (Vector3.Dot(moveDir, -wallNormal) > enterDotThreshold)
-        {
             EnterCover(wallNormal);
-        }
     }
 
-    private void EnterCover(Vector3 wallNormal)
-    {
-        playerMovement.currentState = MovementState.Cover;
-
-        coverNormal = wallNormal;
-        coverRight = Vector3.Cross(coverNormal, Vector3.up).normalized;
-
-        SnapToWall();
-    }
-
-    private void ExitCover()
-    {
-        playerMovement.currentState = MovementState.Free;
-        coverNormal = Vector3.zero;
-    }
-
+    #region HANDLE COVER
     public void HandleCoverMovement()
     {
         if (!IsInCover()) return;
@@ -75,52 +46,84 @@ public class PlayerCoverSystem : MonoBehaviour
         Vector3 moveDir = GetNormalizedMovement();
         if (moveDir == Vector3.zero) return;
 
-        float moveAmount = Vector3.Dot(moveDir, coverRight);
-        Vector3 move = coverRight * moveAmount * coverMoveSpeed * Time.deltaTime;
-
-        characterController.Move(move);
-
-        CheckIfStillInCover(moveAmount);
-    }
-
-    private void CheckIfStillInCover(float moveAmount)
-    {
-        // Offset ray toward movement direction
-        Vector3 origin = transform.position + coverRight * Mathf.Sign(moveAmount) * edgeCheckOffset;
-
-        if (!Physics.Raycast(origin, -coverNormal, wallCheckDistance))
+        if (Vector3.Dot(moveDir, coverNormal) > enterDotThreshold)
         {
             ExitCover();
+            return;
         }
+
+        float moveAmount = Vector3.Dot(moveDir, coverRight);
+
+        if (Mathf.Abs(moveAmount) > 0.1f)
+            lastMoveDirection = Mathf.Sign(moveAmount);
+
+        characterController.Move(coverRight * moveAmount * coverMoveSpeed * Time.deltaTime);
+        CheckForEdge(moveAmount);
+    }
+
+    private void EnterCover(Vector3 wallNormal)
+    {
+        playerMovement.SetState(MovementState.Cover);
+        coverNormal = wallNormal;
+        coverRight = Vector3.Cross(coverNormal, Vector3.up).normalized;
+        SnapToWall();
     }
 
     private void SnapToWall()
     {
-        if (!Physics.Raycast(transform.position, -coverNormal, out RaycastHit hit, 2f))
+        Vector3 rayOrigin = transform.position + Vector3.up * (characterController.height / 2f);
+
+        if (!Physics.Raycast(rayOrigin, -coverNormal, out RaycastHit hit, 2f))
             return;
 
         characterController.enabled = false;
 
-        float playerRadius = characterController.radius;
-        Vector3 snapPosition = hit.point + coverNormal * playerRadius;
+        Vector3 snapPosition = hit.point + coverNormal * characterController.radius;
+        snapPosition.y = transform.position.y;
         transform.position = snapPosition;
 
-        Vector3 lookDirection = coverNormal;
-        lookDirection.y = 0f;
-
+        Vector3 lookDirection = new Vector3(coverNormal.x, 0f, coverNormal.z);
         if (lookDirection != Vector3.zero)
             transform.rotation = Quaternion.LookRotation(lookDirection);
 
         characterController.enabled = true;
     }
 
+    private void ExitCover()
+    {
+        playerMovement.SetState(MovementState.Free);
+        coverNormal = Vector3.zero;
+    }
+
+    private void CheckForEdge(float moveAmount)
+    {
+        float offset = characterController.radius + edgeCheckOffset;
+        if (IsWallSideOpen(coverRight * Mathf.Sign(moveAmount), offset))
+            ExitCover();
+    }
+    #endregion
+
+    #region HELPER
+    private bool IsWallSideOpen(Vector3 direction, float distance)
+    {
+        Vector3 origin = transform.position + direction * distance;
+        return !Physics.Raycast(origin, -coverNormal, wallCheckDistance);
+    }
+
+    public bool IsNearEdge() => IsRightSideOpen() || IsLeftSideOpen();
+
+    public bool IsRightSideOpen() => IsInCover() && IsWallSideOpen(coverRight, nearEdgeDistance);
+    public bool IsLeftSideOpen()  => IsInCover() && IsWallSideOpen(-coverRight, nearEdgeDistance);
+
     private Vector3 GetNormalizedMovement()
     {
         Vector3 moveDir = playerMovement.GetPlayerMovementDirection();
-        if (moveDir.magnitude < 0.1f) return Vector3.zero;
-        return moveDir.normalized;
+        return moveDir.magnitude < 0.1f ? Vector3.zero : moveDir.normalized;
     }
 
-    public bool IsInCover()
-        => playerMovement.currentState == MovementState.Cover;
+    public float GetLastMoveDirection() => lastMoveDirection;
+
+    public bool IsInCover() => playerMovement.GetState() == MovementState.Cover;
+    
+    #endregion
 }
