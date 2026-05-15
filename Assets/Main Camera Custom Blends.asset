@@ -50,7 +50,7 @@ MonoBehaviour:
     To: ExploreCam_Room1
     Blend:
       Style: 6
-      Time: 0.2
+      Time: 0.4
       CustomCurve:
         serializedVersion: 2
         m_Curve: []
