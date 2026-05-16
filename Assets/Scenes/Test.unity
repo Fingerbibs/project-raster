@@ -318,9 +318,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 1.25
-  enterDotThreshold: 0.7
+  enterThreshold: 0.9
   wallCheckDistance: 0.75
-  edgeCheckOffset: 0
+  exitOffset: -0.2
   nearEdgeDistance: 2
 --- !u!114 &320910650
 MonoBehaviour:
@@ -335,7 +335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3.5
-  rotationSpeed: 10
+  rotationSpeed: 8
 --- !u!114 &320910651
 MonoBehaviour:
   m_ObjectHideFlags: 0

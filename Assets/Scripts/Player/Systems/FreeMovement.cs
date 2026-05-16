@@ -18,8 +18,8 @@ public  class FreeMovement : MovementType
     private void RotateTowards(Vector3 direction)
     {
         Quaternion targetRotation = Quaternion.LookRotation(direction);
-        playerController.transform.rotation = Quaternion.Slerp(
-            playerController.transform.rotation,
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
             targetRotation,
             rotationSpeed * Time.deltaTime
         );

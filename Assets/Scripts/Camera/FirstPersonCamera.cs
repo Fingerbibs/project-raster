@@ -17,7 +17,11 @@ public class FirstPersonCamera : BaseCamera
     private void Update()
     {
         if (GetCamera().Priority == FIRST_PERSON_PRIORITY)
+        {
+            var brain = CinemachineCore.FindPotentialTargetBrain(GetCamera());
+            bool blending = brain != null && brain.IsBlending;
             reticle.SetVisible(true);
+        }
         else
             reticle.SetVisible(false);
     }

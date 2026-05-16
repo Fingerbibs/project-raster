@@ -4,34 +4,37 @@ using System;
 public class CoverMovement : MovementType
 {
     [Header("Cover Settings")]
-    [SerializeField] private float enterDotThreshold = 0.7f;
-    [SerializeField] private float wallCheckDistance = 1.5f;
-    [SerializeField] private float edgeCheckOffset = 0.3f;
-    [SerializeField] private float nearEdgeDistance = 2f;
+    [SerializeField] private float enterThreshold = 0.7f; // Threshold for angle entry(precentage aligned to wall)
+    [SerializeField] private float wallCheckDistance = 1.5f; // How far from the wall for coverEntering
+    [SerializeField] private float exitOffset = 0.3f; // How close the player can be the the edge of the wall before exiting
+    [SerializeField] private float nearEdgeDistance = 2f; // How close to the edge of the wall before considered "near" edge
 
     public event Action OnCoverEntered;
     public event Action OnCoverExited;
 
-    private Vector3 coverNormal;
-    private Vector3 coverRight;
+    private Vector3 coverNormal; // Vector perpendicular to wall length
+    private Vector3 coverRight; // Vector parallel to wall length
     private float lastMoveDirection;
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (!hit.collider.CompareTag("Cover")) return;
         if (IsInCover()) return;
-
         Vector3 moveDir = playerController.GetNormalizedMovement();
         if (moveDir == Vector3.zero) return;
 
-        Vector3 wallNormal = hit.normal;
-        wallNormal.y = 0f;
-        wallNormal.Normalize();
-
-        if (Vector3.Dot(moveDir, -wallNormal) > enterDotThreshold)
-            EnterCover(wallNormal);
+        // Grab the normal vector of the cover and compare it to the player' move direction,
+        // If player is more than (%enterThreshold) aligned with the cover, EnterCover
+        coverNormal = hit.normal;
+        coverNormal.y = 0f;
+        coverNormal.Normalize();
+        if (Vector3.Dot(moveDir, -coverNormal) > enterThreshold)
+            EnterCover();
     }
 
+    /// <summary>
+    /// Once in cover, the player can move side to side
+    /// </summary>
     public override void HandleMovement()
     {
         if (!IsInCover()) return;
@@ -39,7 +42,7 @@ public class CoverMovement : MovementType
         Vector3 moveDir = playerController.GetNormalizedMovement();
         if (moveDir == Vector3.zero) return;
 
-        if (Vector3.Dot(moveDir, coverNormal) > enterDotThreshold)
+        if (Vector3.Dot(moveDir, coverNormal) > enterThreshold)
         {
             OnCoverExited?.Invoke();
             return;
@@ -54,30 +57,24 @@ public class CoverMovement : MovementType
         CheckForEdge(moveAmount);
     }
 
-    private void EnterCover(Vector3 wallNormal)
+    /// <summary>
+    /// Set the vector parallel to the path of the wall and snap the player to the wall
+    /// </summary>
+    private void EnterCover()
     {
         OnCoverEntered?.Invoke();
-        coverNormal = wallNormal;
         coverRight = Vector3.Cross(coverNormal, Vector3.up).normalized;
         SnapToWall();
     }
 
-    /// <summary>
-    /// Called by CoverState.Exit() to clean up cover data.
-    /// </summary>
-    public void ResetCover()
-    {
-        coverNormal = Vector3.zero;
-        coverRight = Vector3.zero;
-    }
-
     private void SnapToWall()
     {
+        // If player isn't within 2m of the wall, do NOT snap
         Vector3 rayOrigin = transform.position + Vector3.up * (characterController.height / 2f);
-
-        if (!Physics.Raycast(rayOrigin, -coverNormal, out RaycastHit hit, 2f))
+        if (!Physics.Raycast(rayOrigin, -coverNormal, out RaycastHit hit, wallCheckDistance))
             return;
 
+        // Disable the CharacterController and snap the player to the Raycast hit point(the wall)
         characterController.enabled = false;
 
         Vector3 snapPosition = hit.point + coverNormal * characterController.radius;
@@ -93,7 +90,7 @@ public class CoverMovement : MovementType
 
     private void CheckForEdge(float moveAmount)
     {
-        float offset = characterController.radius + edgeCheckOffset;
+        float offset = characterController.radius + exitOffset;
         if (IsWallSideOpen(coverRight * Mathf.Sign(moveAmount), offset))
             OnCoverExited?.Invoke();
     }
@@ -102,6 +99,15 @@ public class CoverMovement : MovementType
     {
         Vector3 origin = transform.position + direction * distance;
         return !Physics.Raycast(origin, -coverNormal, wallCheckDistance);
+    }
+
+    /// <summary>
+    /// Called by CoverState.Exit() to clean up cover data.
+    /// </summary>
+    public void ResetCover()
+    {
+        coverNormal = Vector3.zero;
+        coverRight = Vector3.zero;
     }
 
     public bool IsNearEdge()      => IsRightSideOpen() || IsLeftSideOpen();
