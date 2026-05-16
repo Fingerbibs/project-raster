@@ -1,33 +1,27 @@
 using UnityEngine;
+using System;
 
-public class PlayerCoverSystem : MonoBehaviour
+public class CoverMovement : MovementType
 {
     [Header("Cover Settings")]
-    [SerializeField] private float coverMoveSpeed = 2f;
     [SerializeField] private float enterDotThreshold = 0.7f;
     [SerializeField] private float wallCheckDistance = 1.5f;
     [SerializeField] private float edgeCheckOffset = 0.3f;
     [SerializeField] private float nearEdgeDistance = 2f;
 
-    private PlayerMovement playerMovement;
-    private CharacterController characterController;
+    public event Action OnCoverEntered;
+    public event Action OnCoverExited;
 
     private Vector3 coverNormal;
     private Vector3 coverRight;
     private float lastMoveDirection;
-
-    private void Awake()
-    {
-        playerMovement = GetComponent<PlayerMovement>();
-        characterController = GetComponent<CharacterController>();
-    }
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (!hit.collider.CompareTag("Cover")) return;
         if (IsInCover()) return;
 
-        Vector3 moveDir = GetNormalizedMovement();
+        Vector3 moveDir = playerController.GetNormalizedMovement();
         if (moveDir == Vector3.zero) return;
 
         Vector3 wallNormal = hit.normal;
@@ -38,17 +32,16 @@ public class PlayerCoverSystem : MonoBehaviour
             EnterCover(wallNormal);
     }
 
-    #region HANDLE COVER
-    public void HandleCoverMovement()
+    public override void HandleMovement()
     {
         if (!IsInCover()) return;
 
-        Vector3 moveDir = GetNormalizedMovement();
+        Vector3 moveDir = playerController.GetNormalizedMovement();
         if (moveDir == Vector3.zero) return;
 
         if (Vector3.Dot(moveDir, coverNormal) > enterDotThreshold)
         {
-            ExitCover();
+            OnCoverExited?.Invoke();
             return;
         }
 
@@ -57,16 +50,25 @@ public class PlayerCoverSystem : MonoBehaviour
         if (Mathf.Abs(moveAmount) > 0.1f)
             lastMoveDirection = Mathf.Sign(moveAmount);
 
-        characterController.Move(coverRight * moveAmount * coverMoveSpeed * Time.deltaTime);
+        characterController.Move(coverRight * moveAmount * moveSpeed * Time.deltaTime);
         CheckForEdge(moveAmount);
     }
 
     private void EnterCover(Vector3 wallNormal)
     {
-        playerMovement.SetState(MovementState.Cover);
+        OnCoverEntered?.Invoke();
         coverNormal = wallNormal;
         coverRight = Vector3.Cross(coverNormal, Vector3.up).normalized;
         SnapToWall();
+    }
+
+    /// <summary>
+    /// Called by CoverState.Exit() to clean up cover data.
+    /// </summary>
+    public void ResetCover()
+    {
+        coverNormal = Vector3.zero;
+        coverRight = Vector3.zero;
     }
 
     private void SnapToWall()
@@ -89,41 +91,22 @@ public class PlayerCoverSystem : MonoBehaviour
         characterController.enabled = true;
     }
 
-    private void ExitCover()
-    {
-        playerMovement.SetState(MovementState.Free);
-        coverNormal = Vector3.zero;
-    }
-
     private void CheckForEdge(float moveAmount)
     {
         float offset = characterController.radius + edgeCheckOffset;
         if (IsWallSideOpen(coverRight * Mathf.Sign(moveAmount), offset))
-            ExitCover();
+            OnCoverExited?.Invoke();
     }
-    #endregion
 
-    #region HELPER
     private bool IsWallSideOpen(Vector3 direction, float distance)
     {
         Vector3 origin = transform.position + direction * distance;
         return !Physics.Raycast(origin, -coverNormal, wallCheckDistance);
     }
 
-    public bool IsNearEdge() => IsRightSideOpen() || IsLeftSideOpen();
-
+    public bool IsNearEdge()      => IsRightSideOpen() || IsLeftSideOpen();
     public bool IsRightSideOpen() => IsInCover() && IsWallSideOpen(coverRight, nearEdgeDistance);
     public bool IsLeftSideOpen()  => IsInCover() && IsWallSideOpen(-coverRight, nearEdgeDistance);
-
-    private Vector3 GetNormalizedMovement()
-    {
-        Vector3 moveDir = playerMovement.GetPlayerMovementDirection();
-        return moveDir.magnitude < 0.1f ? Vector3.zero : moveDir.normalized;
-    }
-
+    public bool IsInCover() => playerController.GetState() == MovementState.Cover;
     public float GetLastMoveDirection() => lastMoveDirection;
-
-    public bool IsInCover() => playerMovement.GetState() == MovementState.Cover;
-    
-    #endregion
 }

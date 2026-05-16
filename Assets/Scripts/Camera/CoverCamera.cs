@@ -4,7 +4,7 @@ using System.Collections;
 
 public class CoverCamera : BaseCamera
 {
-    [SerializeField] private PlayerCoverSystem coverSystem;
+    [SerializeField] private CoverMovement coverMovement;
 
     private CinemachineThirdPersonFollow cameraFollow;
     private Coroutine cameraSideCoroutine;
@@ -22,13 +22,13 @@ public class CoverCamera : BaseCamera
 
     public bool IsNearEdge()
     {
-        return coverSystem.IsNearEdge();
+        return coverMovement.IsNearEdge();
     }
 
     private void UpdateCameraSide()
     {
-        if (cameraFollow == null || coverSystem == null) return;
-        if (!coverSystem.IsInCover()) return;
+        if (cameraFollow == null || coverMovement== null) return;
+        if (!coverMovement.IsInCover()) return;
         if (cameraSideCoroutine != null) return; // don't interrupt ongoing transition
 
         cameraSideCoroutine = StartCoroutine(UpdateCameraSideCoroutine());
@@ -36,12 +36,12 @@ public class CoverCamera : BaseCamera
 
     private IEnumerator UpdateCameraSideCoroutine()
     {
-        bool rightOpen = coverSystem.IsRightSideOpen();
-        bool leftOpen = coverSystem.IsLeftSideOpen();
+        bool rightOpen = coverMovement.IsRightSideOpen();
+        bool leftOpen = coverMovement.IsLeftSideOpen();
 
         float targetSide;
         if (rightOpen && leftOpen)
-            targetSide = coverSystem.GetLastMoveDirection() > 0f ? 0f : 1f;
+            targetSide = coverMovement.GetLastMoveDirection() > 0f ? 0f : 1f;
         else if (rightOpen)
             targetSide = 0f;
         else if (leftOpen)

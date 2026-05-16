@@ -1,4 +1,6 @@
-public class BaseCamera : MonoBehaviour
+using UnityEngine;
+using Unity.Cinemachine;
+public abstract class BaseCamera : MonoBehaviour
 {
     private CinemachineCamera cinemachineCamera;
 
@@ -19,4 +21,8 @@ public class BaseCamera : MonoBehaviour
         if (cinemachineCamera != null) 
             cinemachineCamera.Priority = priority;
     }
+
+    public bool IsActive { get; private set; }
+
+    public void SetActive(bool active) => IsActive = active;
 }

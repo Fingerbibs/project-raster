@@ -239,10 +239,11 @@ GameObject:
   m_Component:
   - component: {fileID: 320910645}
   - component: {fileID: 320910644}
-  - component: {fileID: 320910646}
-  - component: {fileID: 320910647}
+  - component: {fileID: 320910652}
   - component: {fileID: 320910648}
   - component: {fileID: 320910649}
+  - component: {fileID: 320910650}
+  - component: {fileID: 320910651}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -292,37 +293,6 @@ Transform:
   - {fileID: 583882915}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &320910646
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320910643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28c5efdbbf922a44897f313f73819bff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 3
-  rotationSpeed: 8
---- !u!114 &320910647
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320910643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb6bcd86d8b8d804c8a0bfbd54730a1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  coverMoveSpeed: 1
-  enterDotThreshold: 0.7
-  wallCheckDistance: 0.75
-  edgeCheckOffset: 0
-  nearEdgeDistance: 2
 --- !u!114 &320910648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,7 +314,51 @@ MonoBehaviour:
   m_GameObject: {fileID: 320910643}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa7c6e034cb098e419299c0ba059a23e, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e42e8b3cbe941541b43ce03031dade7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 1.25
+  enterDotThreshold: 0.7
+  wallCheckDistance: 0.75
+  edgeCheckOffset: 0
+  nearEdgeDistance: 2
+--- !u!114 &320910650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320910643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49e160b3f93fcb845beb2a610d26f2e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 3.5
+  rotationSpeed: 10
+--- !u!114 &320910651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320910643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef84a0ed913b0074b94825c36da64939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 0
+--- !u!114 &320910652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320910643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f00e7ee26ddd994fa6ed9f245403f7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &325922228
@@ -866,7 +880,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9201466cf06c3284da3767cb82f99d93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerMovement: {fileID: 320910646}
+  playerController: {fileID: 320910652}
   coverCamera: {fileID: 544180268}
   firstPersonCamera: {fileID: 325922236}
   exploreCamera: {fileID: 1592485664}
@@ -1051,7 +1065,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d21b8be41ea7ff4681c5e274294e9ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coverSystem: {fileID: 320910647}
+  coverMovement: {fileID: 320910649}
 --- !u!1 &583882914
 GameObject:
   m_ObjectHideFlags: 0

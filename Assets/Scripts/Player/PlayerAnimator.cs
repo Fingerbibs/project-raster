@@ -1,21 +1,18 @@
 using UnityEngine;
-
 public class PlayerAnimator : MonoBehaviour
 {
     private Animator animator;
-    private PlayerMovement playerMovement;
-    private PlayerCoverSystem coverSystem;
+    private PlayerController playerController;
 
     void Awake()
     {
         animator = GetComponentInChildren<Animator>();
-        playerMovement = GetComponent<PlayerMovement>();
-        coverSystem = GetComponent<PlayerCoverSystem>();
+        playerController = GetComponent<PlayerController>();
     }
 
     void Update()
     {
-        animator.SetBool("isRunning", playerMovement.IsRunning());
-        animator.SetBool("isInCover", coverSystem.IsInCover());
+        animator.SetBool("isRunning", playerController.IsRunning());
+        animator.SetBool("isInCover", playerController.IsInCover());
     }
 }

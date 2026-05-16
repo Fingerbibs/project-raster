@@ -3,14 +3,14 @@ using Unity.Cinemachine;
 
 public class CameraManager : MonoBehaviour
 {
-    [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private PlayerController playerController;
 
     [Header("Cameras")]
     [SerializeField] private CoverCamera coverCamera;
     [SerializeField] private FirstPersonCamera firstPersonCamera;
     [SerializeField] private ExploreCamera exploreCamera;
 
-    private BaseCamera activeCamera;
+    private CinemachineCamera activeCamera;
 
     private const int INACTIVE_PRIORITY = 0;
     private const int EXPLORE_PRIORITY = 10;
@@ -19,14 +19,14 @@ public class CameraManager : MonoBehaviour
 
     private void Awake()
     {
-        if(!playerMovement)
-            Debug.LogError("CameraManager: No PlayerMovement found in scene!");
+        if(!playerController)
+            Debug.LogError("CameraManager: No PlayerController found in scene!");
     }
 
     private void LateUpdate()
     {
-        if(playerMovement == null) return;
-        UpdatePriorities(playerMovement.GetState());
+        if(playerController == null) return;
+        UpdatePriorities(playerController.GetState());
     }
 
     private void UpdatePriorities(MovementState state)
@@ -41,30 +41,30 @@ public class CameraManager : MonoBehaviour
             case MovementState.FirstPerson:
                 firstPersonCamera.SetPriority(FIRST_PERSON_PRIORITY);
 
-                if (activeCamera != firstPersonCamera)
+                if (activeCamera != firstPersonCamera.GetCamera())
                         firstPersonCamera.SetInitView();
                 
-                activeCamera = firstPersonCamera;
+                activeCamera = firstPersonCamera.GetCamera();
                 break;
             case MovementState.Cover:
                 // Only switch to cover camera when near an edge
                 if (coverCamera.IsNearEdge())
                 {
                     coverCamera.SetPriority(COVER_PRIORITY);
-                    activeCamera = coverCamera;
+                    activeCamera = coverCamera.GetCamera();
                 }
                 else
                 {
                     exploreCamera.SetPriority(EXPLORE_PRIORITY);
-                    activeCamera = exploreCamera;
+                    activeCamera = exploreCamera.GetCamera();
                 }
                 break;
             case MovementState.Free:
                 exploreCamera.SetPriority(EXPLORE_PRIORITY);
-                activeCamera = exploreCamera;
+                activeCamera = exploreCamera.GetCamera();
                 break;
         }
     }
     
-    public BaseCamera GetActiveCamera() => activeCamera;
+    public CinemachineCamera GetActiveCamera() => activeCamera;
 }

@@ -1,3 +1,5 @@
+using UnityEngine;
+using UnityEngine.UI;
 public class ReticleController : MonoBehaviour
 {
     [SerializeField] private Image _reticleImage;
