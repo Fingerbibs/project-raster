@@ -1,5 +1,5 @@
 using UnityEngine;
-public class CoverState : IMovementState
+public class CoverState : IState<MovementState>
 {
     private readonly PlayerContext c;
 

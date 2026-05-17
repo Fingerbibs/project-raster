@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FreeState : IMovementState
+public class FreeState : IState<MovementState>
 {
     private readonly PlayerContext c;
 

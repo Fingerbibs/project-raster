@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    private MovementStateMachine stateMachine;
+    private StateMachine<MovementState, PlayerContext> stateMachine;
     private InputActions playerInput;
     private CharacterController characterController;
 
@@ -29,44 +30,46 @@ public class PlayerController : MonoBehaviour
 
         playerInput.Player.Move.performed += OnMovementInput;
         playerInput.Player.Move.canceled += OnMovementInput;
-        playerInput.Player.FirstPersonToggle.performed += _ =>
+
+        playerInput.Player.FirstPersonToggle.performed += _ => 
         {
-            previousState = stateMachine.CurrentState;
+            coverMovement.enabled = false;
             SetState(MovementState.FirstPerson);
         };
-        playerInput.Player.FirstPersonToggle.canceled += _ => SetState(previousState);
+        playerInput.Player.FirstPersonToggle.canceled += _ => {
+            coverMovement.enabled = true;
+            SetState(previousState);
+        };
+
         coverMovement.OnCoverEntered += () => SetState(MovementState.Cover);
         coverMovement.OnCoverExited  += () => SetState(MovementState.Free);
 
         InitStateMachine();
     }
 
-    private void Update()
-    {
-        stateMachine.Update();
-    }
+    private void Update() => stateMachine.Update();
 
     #region State Machine
     private void InitStateMachine()
     {
-        var context = new PlayerContext
-        {
-            Player    = this,
-            Controller  = characterController,
-            Transform   = transform,
-            CoverMove   = coverMovement,
-            FreeMove    = freeMovement,
-            FpsMove     = fpsMovement
-        };
+        var context = new PlayerContext(
+            this,
+            characterController,
+            transform,
+            coverMovement,
+            freeMovement,
+            fpsMovement
+        );
 
-        var states = new Dictionary<MovementState, IMovementState>
+
+        var states = new Dictionary<MovementState, IState<MovementState>>
         {
             { MovementState.Free,        new FreeState(context) },
             { MovementState.Cover,       new CoverState(context) },
             { MovementState.FirstPerson, new FirstPersonState(context) },
         };
 
-        stateMachine = new MovementStateMachine(states, MovementState.Free);
+        stateMachine = new StateMachine<MovementState, PlayerContext>(states, MovementState.Free);
     }
 
     public void SetState(MovementState next)

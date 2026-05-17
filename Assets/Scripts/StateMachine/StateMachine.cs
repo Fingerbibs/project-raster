@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MovementStateMachine
+public class StateMachine<TState, TContext> where TState : System.Enum
 {
-    private IMovementState current;
-    private Dictionary<MovementState, IMovementState> states;
+    private IState<TState> current;
+    private Dictionary<TState, IState<TState>> states;
 
-    public MovementState CurrentState { get; private set; }
+    public TState CurrentState { get; private set; }
 
-    public MovementStateMachine(Dictionary<MovementState, IMovementState> states, MovementState initialState)
+    public StateMachine(Dictionary<TState, IState<TState>> states, TState initialState)
     {
         this.states = states;
         CurrentState = initialState;
@@ -16,15 +16,11 @@ public class MovementStateMachine
         current.Enter();
     }
 
-    public void Update()
-    {
-        if (current != null)
-            current.Update();
-    }
+    public void Update() => current?.Update();
 
-    public bool TransitionTo(MovementState next)
+    public bool TransitionTo(TState next)
     {
-        if (CurrentState == next) return false;
+        if (CurrentState.Equals(next)) return false;
 
         if (!current.CanTransitionTo(next))
         {
