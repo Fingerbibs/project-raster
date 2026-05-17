@@ -65,6 +65,16 @@ public class CameraManager : MonoBehaviour
                 break;
         }
     }
+
+    private void HandleZoneChange(CameraZone zone)
+    {
+        ExploreCamera newCamera = zone.GetComponentInChildren<ExploreCamera>();
+        exploreCamera.SetPriority(INACTIVE_PRIORITY);
+        exploreCamera = newCamera;
+        exploreCamera.SetPriority(EXPLORE_PRIORITY);
+    }
+
+    private void OnEnable() => ZoneEvents.onCameraZoneEnter += HandleZoneChange;
     
     public CinemachineCamera GetActiveCamera() => activeCamera;
 }

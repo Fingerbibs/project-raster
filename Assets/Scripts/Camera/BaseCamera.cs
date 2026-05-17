@@ -21,8 +21,4 @@ public abstract class BaseCamera : MonoBehaviour
         if (cinemachineCamera != null) 
             cinemachineCamera.Priority = priority;
     }
-
-    public bool IsActive { get; private set; }
-
-    public void SetActive(bool active) => IsActive = active;
 }
