@@ -6,9 +6,9 @@ public class PatrolState : IState<EnemyState>
 
     public PatrolState(EnemyContext context) => c = context;
 
-    public void Enter() { }
+    public void Enter() => c.EnemyPatrol.StartPatrol();
 
-    public void Update() { }
+    public void Update() => c.EnemyPatrol.Patrol();
 
     public void Exit() { }
 

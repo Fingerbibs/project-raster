@@ -1,16 +1,17 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class EnemyController : MonoBehaviour
 {
     private StateMachine<EnemyState, EnemyContext> stateMachine;
+    private EnemyPatrol enemyPatrol;
 
     private EnemyState previousState = EnemyState.Patrol;
 
     private void Awake()
     {
+        enemyPatrol = GetComponent<EnemyPatrol>();
         InitStateMachine();
     }
 
@@ -21,7 +22,8 @@ public class EnemyController : MonoBehaviour
     {
         var context = new EnemyContext(
             this,
-            transform
+            transform,
+            enemyPatrol
         );
 
 
@@ -42,5 +44,8 @@ public class EnemyController : MonoBehaviour
     }
 
     public EnemyState GetState() => stateMachine.CurrentState;
+
+    public bool IsWalking() => GetState() == EnemyState.Patrol && !IsIdle();
+    public bool IsIdle() => enemyPatrol.IsWaiting();
     #endregion
 }
