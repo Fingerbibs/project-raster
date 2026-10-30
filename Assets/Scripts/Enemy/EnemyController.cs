@@ -12,8 +12,10 @@ public class EnemyController : MonoBehaviour
     private void Awake()
     {
         enemyPatrol = GetComponent<EnemyPatrol>();
-        InitStateMachine();
     }
+
+    // Init in Start so every system's Awake has run before the first state's Enter()
+    private void Start() => InitStateMachine();
 
     private void Update() => stateMachine.Update();
 

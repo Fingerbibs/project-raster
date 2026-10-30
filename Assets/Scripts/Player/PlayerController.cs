@@ -43,9 +43,10 @@ public class PlayerController : MonoBehaviour
 
         coverMovement.OnCoverEntered += () => SetState(MovementState.Cover);
         coverMovement.OnCoverExited  += () => SetState(MovementState.Free);
-
-        InitStateMachine();
     }
+
+    // Init in Start so every system's Awake has run before the first state's Enter()
+    private void Start() => InitStateMachine();
 
     private void Update() => stateMachine.Update();
 
@@ -74,6 +75,7 @@ public class PlayerController : MonoBehaviour
 
     public void SetState(MovementState next)
     {
+        if (stateMachine == null) return; // input can fire before Start on frame 1
         previousState = stateMachine.CurrentState;
         stateMachine.TransitionTo(next);
     }
