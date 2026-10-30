@@ -6,7 +6,7 @@ public class EvasionState : IState<EnemyState>
 
     public EvasionState(EnemyContext context) => c = context;
 
-    public void Enter() => c.EnemySearch.StartSearch(c.EnemyVision.LastKnownPlayerPosition);
+    public void Enter() => c.EnemySearch.StartSearch(c.Enemy.SearchTarget);
 
     public void Update() => c.EnemySearch.Search();
 

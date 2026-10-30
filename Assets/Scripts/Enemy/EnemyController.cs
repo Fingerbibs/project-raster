@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,6 +13,10 @@ public class EnemyController : MonoBehaviour
     private NavMeshAgent agent;
 
     private EnemyState previousState = EnemyState.Patrol;
+
+    public event Action<EnemyController, Vector3> OnAlerted;
+
+    public Vector3 SearchTarget { get; private set; }
 
     private void Awake()
     {
@@ -44,12 +49,29 @@ public class EnemyController : MonoBehaviour
     private void HandlePlayerSpotted()
     {
         EnemyState state = GetState();
-        if (state == EnemyState.Patrol || state == EnemyState.Evasion) SetState(EnemyState.Alert);
+        if (state != EnemyState.Patrol && state != EnemyState.Evasion) return;
+
+        SetState(EnemyState.Alert);
+        OnAlerted?.Invoke(this, enemyVision.LastKnownPlayerPosition);
     }
 
     private void HandleTargetLost()
     {
-        if (GetState() == EnemyState.Alert) SetState(EnemyState.Evasion);
+        if (GetState() != EnemyState.Alert) return;
+
+        SearchTarget = enemyVision.LastKnownPlayerPosition;
+        SetState(EnemyState.Evasion);
+    }
+
+    // Called by AlertZone when another enemy in the zone spots the player
+    public void Investigate(Vector3 position)
+    {
+        EnemyState state = GetState();
+        if (state == EnemyState.Alert) return;
+
+        SearchTarget = position;
+        if (state == EnemyState.Evasion) enemySearch.StartSearch(position);
+        else if (state == EnemyState.Patrol) SetState(EnemyState.Evasion);
     }
 
     private void HandleSearchFinished()
