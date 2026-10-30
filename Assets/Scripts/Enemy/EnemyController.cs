@@ -1,11 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
     private StateMachine<EnemyState, EnemyContext> stateMachine;
     private EnemyPatrol enemyPatrol;
     private EnemyVision enemyVision;
+    private EnemyChase enemyChase;
+    private EnemySearch enemySearch;
+    private NavMeshAgent agent;
 
     private EnemyState previousState = EnemyState.Patrol;
 
@@ -13,10 +17,24 @@ public class EnemyController : MonoBehaviour
     {
         enemyPatrol = GetComponent<EnemyPatrol>();
         enemyVision = GetComponent<EnemyVision>();
+        enemyChase  = GetComponent<EnemyChase>();
+        enemySearch = GetComponent<EnemySearch>();
+        agent       = GetComponent<NavMeshAgent>();
     }
 
-    private void OnEnable() => enemyVision.OnPlayerSpotted += HandlePlayerSpotted;
-    private void OnDisable() => enemyVision.OnPlayerSpotted -= HandlePlayerSpotted;
+    private void OnEnable()
+    {
+        enemyVision.OnPlayerSpotted  += HandlePlayerSpotted;
+        enemyChase.OnTargetLost      += HandleTargetLost;
+        enemySearch.OnSearchFinished += HandleSearchFinished;
+    }
+
+    private void OnDisable()
+    {
+        enemyVision.OnPlayerSpotted  -= HandlePlayerSpotted;
+        enemyChase.OnTargetLost      -= HandleTargetLost;
+        enemySearch.OnSearchFinished -= HandleSearchFinished;
+    }
 
     // Init in Start so every system's Awake has run before the first state's Enter()
     private void Start() => InitStateMachine();
@@ -25,7 +43,18 @@ public class EnemyController : MonoBehaviour
 
     private void HandlePlayerSpotted()
     {
-        if (GetState() == EnemyState.Patrol) SetState(EnemyState.Alert);
+        EnemyState state = GetState();
+        if (state == EnemyState.Patrol || state == EnemyState.Evasion) SetState(EnemyState.Alert);
+    }
+
+    private void HandleTargetLost()
+    {
+        if (GetState() == EnemyState.Alert) SetState(EnemyState.Evasion);
+    }
+
+    private void HandleSearchFinished()
+    {
+        if (GetState() == EnemyState.Evasion) SetState(EnemyState.Patrol);
     }
 
     #region State Machine
@@ -35,7 +64,9 @@ public class EnemyController : MonoBehaviour
             this,
             transform,
             enemyPatrol,
-            enemyVision
+            enemyVision,
+            enemyChase,
+            enemySearch
         );
 
 
@@ -43,6 +74,7 @@ public class EnemyController : MonoBehaviour
         {
             { EnemyState.Patrol,        new PatrolState(context) },
             { EnemyState.Alert,         new AlertState(context) },
+            { EnemyState.Evasion,       new EvasionState(context) },
             //{ EnemyState.KO, new KOState(context) },
         };
 
@@ -57,7 +89,7 @@ public class EnemyController : MonoBehaviour
 
     public EnemyState GetState() => stateMachine.CurrentState;
 
-    public bool IsWalking() => GetState() == EnemyState.Patrol && !IsIdle();
-    public bool IsIdle() => GetState() == EnemyState.Alert || enemyPatrol.IsWaiting();
+    public bool IsWalking() => agent.velocity.sqrMagnitude > 0.01f;
+    public bool IsIdle() => !IsWalking();
     #endregion
 }

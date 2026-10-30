@@ -6,11 +6,11 @@ public class AlertState : IState<EnemyState>
 
     public AlertState(EnemyContext context) => c = context;
 
-    public void Enter() => Debug.Log($"{c.Transform.name} alerted");
+    public void Enter() => c.EnemyChase.StartChase();
 
-    public void Update() { }
+    public void Update() => c.EnemyChase.Chase(c.EnemyVision.LastKnownPlayerPosition, c.EnemyVision.CanSeePlayer());
 
-    public void Exit() { }
+    public void Exit() => c.EnemyChase.StopChase();
 
     public bool CanTransitionTo(EnemyState next) => true;
 }
