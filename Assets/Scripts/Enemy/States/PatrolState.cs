@@ -10,7 +10,7 @@ public class PatrolState : IState<EnemyState>
 
     public void Update() => c.EnemyPatrol.Patrol();
 
-    public void Exit() { }
+    public void Exit() => c.EnemyPatrol.StopPatrol();
 
     public bool CanTransitionTo(EnemyState next) => true;
 }

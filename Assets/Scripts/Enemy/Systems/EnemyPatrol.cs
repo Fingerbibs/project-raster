@@ -15,6 +15,7 @@ public class EnemyPatrol : MonoBehaviour
     private Transform[] waypoints;
     private int currentPatrolPoint;
     private bool isWaiting;
+    private Coroutine waitRoutine;
 
     private void Awake()
     {
@@ -36,8 +37,20 @@ public class EnemyPatrol : MonoBehaviour
         if (isWaiting) return;
         if (!agent.pathPending && agent.remainingDistance <= stopAtDistance)
         {
-            StartCoroutine(WaitAtWaypoint());
+            waitRoutine = StartCoroutine(WaitAtWaypoint());
         }
+    }
+
+    public void StopPatrol()
+    {
+        if (waitRoutine != null)
+        {
+            StopCoroutine(waitRoutine);
+            waitRoutine = null;
+        }
+        isWaiting = false;
+        agent.ResetPath();
+        agent.isStopped = false;
     }
 
     private IEnumerator WaitAtWaypoint()
@@ -50,6 +63,7 @@ public class EnemyPatrol : MonoBehaviour
         agent.isStopped = false;
         GoToNextWaypoint();
         isWaiting = false;
+        waitRoutine = null;
     }
 
     public void GoToNextWaypoint()
